@@ -39,7 +39,7 @@ sudo apt-get update
 sudo apt-get install -y \
     git build-essential cmake curl gnupg zsh \
     eza zsh-autosuggestions zsh-syntax-highlighting \
-    fzf btop jq tree ncdu git-delta
+    fzf btop jq tree ncdu git-delta zoxide
 
 # Oh My Zsh: без смены shell и запуска интерактивного zsh во время установки.
 if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
@@ -72,7 +72,6 @@ printf '%s\n' 'org.wezfurlong.wezterm.desktop' \
     >"$CONFIG_DIR/ubuntu-xdg-terminals.list"
 
 # Zoxide и Starship устанавливаются в пользовательский каталог.
-curl -fsSL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh
 curl -fsSL https://starship.rs/install.sh | sh -s -- -y -b "$LOCAL_BIN"
 
 install -m 644 "$SCRIPT_DIR/starship.toml" "$CONFIG_DIR/starship.toml"
