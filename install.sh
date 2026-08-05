@@ -33,13 +33,24 @@ sudo -v
 
 # Базовые пакеты и подключение репозитория universe.
 sudo apt-get update
-sudo apt-get install -y software-properties-common
+sudo apt-get install -y software-properties-common curl gnupg
 sudo add-apt-repository -y universe
+
+# eza нет в штатных репозиториях Ubuntu 22.04, поэтому подключаем
+# APT-репозиторий, рекомендованный проектом eza.
+sudo install -d -m 755 /etc/apt/keyrings
+curl -fsSL https://raw.githubusercontent.com/eza-community/eza/main/deb.asc |
+    sudo gpg --yes --dearmor -o /etc/apt/keyrings/gierens.gpg
+printf '%s\n' \
+    'deb [signed-by=/etc/apt/keyrings/gierens.gpg] http://deb.gierens.de stable main' |
+    sudo tee /etc/apt/sources.list.d/gierens.list >/dev/null
+sudo chmod 644 /etc/apt/keyrings/gierens.gpg /etc/apt/sources.list.d/gierens.list
+
 sudo apt-get update
 sudo apt-get install -y \
     git build-essential cmake curl gnupg zsh \
     eza zsh-autosuggestions zsh-syntax-highlighting \
-    fzf btop jq tree ncdu git-delta zoxide
+    fzf btop jq tree ncdu bat zoxide
 
 # Oh My Zsh: без смены shell и запуска интерактивного zsh во время установки.
 if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
@@ -71,19 +82,26 @@ install -m 644 "$SCRIPT_DIR/wezterm.lua" "$CONFIG_DIR/wezterm/wezterm.lua"
 printf '%s\n' 'org.wezfurlong.wezterm.desktop' \
     >"$CONFIG_DIR/ubuntu-xdg-terminals.list"
 
-# Zoxide и Starship устанавливаются в пользовательский каталог.
+# Starship устанавливается в пользовательский каталог.
+# Zoxide берётся из universe вместе с остальными пакетами.
 curl -fsSL https://starship.rs/install.sh | sh -s -- -y -b "$LOCAL_BIN"
 
 install -m 644 "$SCRIPT_DIR/starship.toml" "$CONFIG_DIR/starship.toml"
 install -m 644 "$SCRIPT_DIR/.zshrc" "$HOME/.zshrc"
 
 # git config --global автоматически создаст ~/.gitconfig, если файла ещё нет.
-git config --global core.pager delta
-git config --global interactive.diffFilter 'delta --color-only'
-git config --global delta.navigate true
-git config --global delta.line-numbers true
-git config --global delta.side-by-side false
-git config --global merge.conflictStyle zdiff3
+# git-delta нет в штатных репозиториях Ubuntu 22.04. Если он уже
+# установлен другим способом, включаем его настройки.
+if command -v delta >/dev/null 2>&1; then
+    git config --global core.pager delta
+    git config --global interactive.diffFilter 'delta --color-only'
+    git config --global delta.navigate true
+    git config --global delta.line-numbers true
+    git config --global delta.side-by-side false
+fi
+
+# Git 2.34 из Ubuntu 22.04 ещё не поддерживает zdiff3.
+git config --global merge.conflictStyle diff3
 
 printf '\nУстановка завершена успешно.\n'
 printf 'Перезапустите терминал или выполните: exec zsh\n'

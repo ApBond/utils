@@ -102,18 +102,30 @@ source $ZSH/oh-my-zsh.sh
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
-# eza — современная замена ls
+# eza/exa — современная замена ls.
 if (( $+commands[eza] )); then
     alias ls='eza --icons=auto --group-directories-first'
     alias ll='eza -lah --icons=auto --git --group-directories-first'
     alias la='eza -a --icons=auto --group-directories-first'
     alias l='eza -lh --icons=auto --group-directories-first'
     alias tree='eza --tree --icons=auto'
+elif (( $+commands[exa] )); then
+    alias ls='exa --icons --group-directories-first'
+    alias ll='exa -lah --icons --git --group-directories-first'
+    alias la='exa -a --icons --group-directories-first'
+    alias l='exa -lh --icons --group-directories-first'
+    alias tree='exa --tree --icons'
 fi
 
-# Fuzzy search
+# Новые версии fzf имеют `fzf --zsh`, а в Ubuntu 22.04 интеграция
+# поставляется отдельными файлами.
 if command -v fzf >/dev/null && fzf --zsh >/dev/null 2>&1; then
     source <(fzf --zsh)
+else
+    [[ -r /usr/share/doc/fzf/examples/completion.zsh ]] &&
+        source /usr/share/doc/fzf/examples/completion.zsh
+    [[ -r /usr/share/doc/fzf/examples/key-bindings.zsh ]] &&
+        source /usr/share/doc/fzf/examples/key-bindings.zsh
 fi
 
 eval "$(starship init zsh)"
@@ -130,15 +142,13 @@ export FZF_DEFAULT_OPTS="
 "
 
 export FZF_CTRL_T_OPTS="
-    --preview 'bat --color=always --style=numbers --line-range=:200 {} 2>/dev/null'
+    --preview 'batcat --color=always --style=numbers --line-range=:200 {} 2>/dev/null'
     --preview-window=right:60%
-    --walker-skip=.git,node_modules,build,target
 "
 
 export FZF_ALT_C_OPTS="
     --preview 'eza --tree --level=2 --icons=always {} 2>/dev/null | head -100'
     --preview-window=right:60%
-    --walker-skip=.git,node_modules,build,target
 "
 
 export _ZO_FZF_OPTS="
@@ -153,4 +163,3 @@ source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 
 # Должен подключаться одним из последних
 source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-
